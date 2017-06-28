@@ -1,0 +1,22 @@
+{
+  "name": "rep",
+  "version": "1.0.0",
+  "description": "demo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mobilepricedev/x.git"
+  },
+  "author": "hl",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mobilepricedev/x/issues"
+  },
+  "homepage": "https://github.com/mobilepricedev/x#readme",
+  "dependencies": {
+    "express": "^4.15.3"
+  }
+}
