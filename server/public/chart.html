@@ -48,35 +48,27 @@
         // Pie layout will use the "val" property of each data object entry
         pieChart = d3.layout.pie().sort(null).value(function(d){return d.val;}), 
         arc = d3.svg.arc().outerRadius(outerRadius).innerRadius(innerRadius),
-        MAX_SECTORS = 15, // Less than 20 please
+        MAX_SECTORS = 7, // Less than 20 please
         colorLen = 100,
         //colors = d3.scale.category20();
         colors = d3.scale.linear()
         .domain([-1, 0, 1])
         .range(["red", "white", "green"]);
 
-    // Synthetic data generation ------------------------------------------------
-    var data = [];
-    var numSectors = Math.ceil(Math.random()*MAX_SECTORS);
-    for(i = -1; i++ < numSectors; ){
-      var children = [];
-      var numChildSectors = Math.ceil(Math.random()*MAX_SECTORS);
-      var color = colors(i/numSectors);
+    var sectors = ["Financials", "Utility", "Consumer Discretionary", "Energy", "Health Care", "Industrial", "Techology",
+                  "Telecom", "Materials"]
 
-      for( j=-1; j++ < numChildSectors; ){
-        // Add children categories with shades of the parent color
-        children.push(
-          { cat: "cat"+((i+1)*100+j), 
-            val: Math.random(), 
-            color: d3.rgb(color).darker(1/(j+1))
-          });  
-      }
-      data.push({ 
-        cat: "cat"+i, 
-        val: Math.random(), 
-        color: color, 
-        children: children});
-    }
+    children1 = [{cat: "cat11", val: 0.3, color: colors(0.6), label: "AAPL US Equity"}, 
+    {cat: "cat12", val: 0.2, color: colors(0.8), label: "TSLA US Equity"}, 
+    {cat: "cat13", val: 0.15, color: colors(0.6), label: "AMZN US Equity"}, 
+    {cat: "cat14", val: 0.15, color: colors(0.75), label: "FB US Equity"}, 
+    {cat: "cat15", val: 0.25, color: colors(-0.4), label: "GOOGL US Equity"}]
+
+    data = [{cat: "cat1", val: 0.4, color: colors(-0.7), children: children1, label: sectors[0]}, 
+    {cat: "cat2", val: 0.3, color: colors(-0.8), children: children1, label: sectors[1]}, 
+    {cat: "cat3", val: 0.1, color: colors(0.8), children: children1, label: sectors[6]}, 
+    {cat: "cat4", val: 0.2, color: colors(0.65), children: children1, label: sectors[4]}]
+
     // --------------------------------------------------------------------------
 
 
@@ -146,10 +138,11 @@
                     .data(pieChart(currData), function(d) {return d.data.cat;} );            
       var sectors = paths.enter().append("svg:path").attr("class", "sector");
 
+      arcGroup.selectAll("g.slice").remove();
+            
       var arcs = arcGroup.selectAll("g.slice")
        // Associate the generated pie data (an array of arcs, each having startAngle,
        // endAngle and value properties) 
-       .remove()
        .data(pieChart(currData))
        // This will create <g> elements for every "extra" data element that should be associated
        // with a selection. The result is creating a <g> for every object in the data array
@@ -170,7 +163,7 @@
        })
        .style("fill", "White")
        .style("font", "bold 12px Arial")
-       .text(function(d) {return d.data.val;} );
+       .text(function(d) {return d.data.label;} );
 
 
        function angle(d) {

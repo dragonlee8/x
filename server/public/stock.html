@@ -22,15 +22,14 @@
      }
 
      .axis, .axis text {
-       fill: var(--line-chart-color);
+     }
+
+     .line path {
+      stroke: var(--line-chart-color);
      }
 
      .axis line, path {
       stroke: var(--line-chart-color);
-     }
-
-     path {
-       fill: none;
      }
 
     .annotation path {
@@ -96,8 +95,6 @@
 </head>
 <body>
     <svg width=960 height=500>
-      <text class="title" x=40 y=50>d3.annotation()</text>
-      <text x=40 y=80>AAPL stock example</text>
     </svg>
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/1.12.1/d3-annotation.min.js"></script>
@@ -105,11 +102,13 @@
 
     const width = 960
     const height = 500
-    const margin = { top: 120, bottom: 160, left: 50, right: 50}
+    const margin = { top: 120, bottom: 260, left: 50, right: 50}
     const x = d3.scaleTime().range([margin.left, width - margin.right ])
           .domain([new Date('12/1/2005'), new Date('1/1/2011') ])
     const y = d3.scaleLinear().range([height - margin.bottom, margin.top ])
           .domain([0, 330])
+    const y1 = d3.scaleLinear().range([height - margin.bottom, margin.top ])
+          .domain([1000000000, 2000000000])
 
     d3.json("apple.json", function(error, json) {
       if (error) throw error;
@@ -125,19 +124,35 @@
 
       svg.select("g.lineChart")
         .datum(json)
-        .append("path")
+        .append("path")        
+        .attr("fill", "none")
         .attr("d", line)
 
       const yAxis = d3.axisLeft(y).ticks(3).tickFormat(function(d){ return "$" + d})
+
       const xAxis = d3.axisBottom(x)
       svg.append("g")
         .attr("class", "axis y")
         .attr("transform", "translate(" + margin.left + ", 0)")
-        .call(yAxis);
+        .call(yAxis)
+        .attr("fill", "none")
+
       svg.append("g")
         .attr("class", "axis x")
         .attr("transform", "translate(0,"+ (height - margin.bottom) +")")
-        .call(xAxis);
+        .call(xAxis)        
+        .attr("fill", "none")
+
+      var area = d3.area()
+        .x(function(d) { return x(new Date (d.Date))})
+        .y0(y1(0))
+        .y1(function(d) { return y1(d.Volume)});
+
+      svg.append("g")
+      .append("path")
+      .datum(json)
+      .attr("fill", "steelblue")
+      .attr("d", area);
 
       const annotations = [
         //moved recession annotation to front of array so it's behind 
