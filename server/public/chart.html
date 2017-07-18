@@ -58,16 +58,20 @@
     var sectors = ["Financials", "Utility", "Consumer Discretionary", "Energy", "Health Care", "Industrial", "Techology",
                   "Telecom", "Materials"]
 
-    children1 = [{cat: "cat11", val: 0.3, color: colors(0.6), label: "AAPL US Equity"}, 
+    children1 = { market: [{val: 0.08, color: colors(0.8), label: "科技板块"}], 
+      sections: [{cat: "cat11", val: 0.3, color: colors(0.6), label: "AAPL US Equity"}, 
     {cat: "cat12", val: 0.2, color: colors(0.8), label: "TSLA US Equity"}, 
     {cat: "cat13", val: 0.15, color: colors(0.6), label: "AMZN US Equity"}, 
     {cat: "cat14", val: 0.15, color: colors(0.75), label: "FB US Equity"}, 
     {cat: "cat15", val: 0.25, color: colors(-0.4), label: "GOOGL US Equity"}]
+  }
 
-    data = [{cat: "cat1", val: 0.4, color: colors(-0.7), children: children1, label: sectors[0]}, 
+    data =  { market:  [{val: 0.08, color: colors(0.3), label: "指数"}], 
+    sections: [{cat: "cat1", val: 0.4, color: colors(-0.7), children: children1, label: sectors[0]}, 
     {cat: "cat2", val: 0.3, color: colors(-0.8), children: children1, label: sectors[1]}, 
     {cat: "cat3", val: 0.1, color: colors(0.8), children: children1, label: sectors[6]}, 
     {cat: "cat4", val: 0.2, color: colors(0.65), children: children1, label: sectors[4]}]
+    }
 
     // --------------------------------------------------------------------------
 
@@ -107,12 +111,10 @@
           .attr("in2", "offsetBlur")
           .attr("mode", "normal");
 
-
-
     // Redraw the graph given a certain level of data
     function updateGraph(cat){
       var currData = data;
-      
+
       // Simple header text
       if(cat != undefined){
         currData = findChildenByCat(cat);
@@ -122,7 +124,7 @@
       }
 
       // Create a gradient for each entry (each entry identified by its unique category)
-      var gradients = defs.selectAll(".gradient").data(currData, function(d){return d.cat;});      
+      var gradients = defs.selectAll(".gradient").data(currData.sections, function(d){return d.cat;});      
       gradients.enter().append("svg:radialGradient")
         .attr("id", function(d, i) { return "gradient" + d.cat; })
         .attr("class", "gradient")
@@ -135,7 +137,7 @@
 
       // Create a sector for each entry in the enter selection
       var paths = arcGroup.selectAll("path")
-                    .data(pieChart(currData), function(d) {return d.data.cat;} );            
+                    .data(pieChart(currData.sections), function(d) {return d.data.cat;} );            
       var sectors = paths.enter().append("svg:path").attr("class", "sector");
 
       arcGroup.selectAll("g.slice").remove();
@@ -143,7 +145,7 @@
       var arcs = arcGroup.selectAll("g.slice")
        // Associate the generated pie data (an array of arcs, each having startAngle,
        // endAngle and value properties) 
-       .data(pieChart(currData))
+       .data(pieChart(currData.sections))
        // This will create <g> elements for every "extra" data element that should be associated
        // with a selection. The result is creating a <g> for every object in the data array
        .enter()
@@ -164,7 +166,45 @@
        .style("fill", "White")
        .style("font", "bold 12px Arial")
        .text(function(d) {return d.data.label;} );
+       svg.selectAll("circle")
+        .remove()
 
+       var circle = svg.selectAll("circle")
+       // Associate the generated pie data (an array of arcs, each having startAngle,
+       // endAngle and value properties) 
+       .data(currData.market)
+       // This will create <g> elements for every "extra" data element that should be associated
+       // with a selection. The result is creating a <g> for every object in the data array
+
+        var circleEnter = circle.enter()
+        .append("g")
+
+        circleEnter.append("circle")
+            .attr("cy", height/2)
+            .attr("cx", width/2)
+            .attr("r", innerRadius)
+            .attr("fill", function(d) {return d.color})
+            .on("click", function(d) {
+                this._listenToEvents = false;
+                updateGraph(undefined); 
+            })     
+
+       circleEnter.append("text")
+       .attr("dx", width/2)
+       .attr("dy", height/2)
+       .attr("text-anchor", "middle")
+       .style("fill", "White")
+       .style("font", "bold 16px Arial")
+       .text(function(d) {return d.label;} )
+
+
+       circleEnter.append("text")
+       .attr("dx", width/2)
+       .attr("dy", height/2 + 20)
+       .attr("text-anchor", "middle")
+       .style("fill", "White")
+       .style("font", "bold 16px Arial")
+       .text(function(d) {return d.val.toString() + "%";} )
 
        function angle(d) {
            var a = (d.startAngle + d.endAngle) * 90 / Math.PI - 90;
@@ -257,9 +297,9 @@
     
 
     function findChildenByCat(cat){      
-      for(i=-1; i++ < data.length - 1; ){
-        if(data[i].cat == cat){
-          return data[i].children;
+      for(i=-1; i++ < data.sections.length - 1; ){
+        if(data.sections[i].cat == cat){
+          return data.sections[i].children;
         }
       }
       return data;
